@@ -14,11 +14,12 @@ class _HomeState extends State<Home> {
   TextEditingController _titleController = TextEditingController();
   TextEditingController _descriptionController = TextEditingController();
   var _db = AnnotationHelper();
+  List<Annotation> _annotations = <Annotation>[];
 
   _showScreenAdd(){
     showDialog(
         context: context,
-        builder: (BuildContext context){
+        builder: (context){
           return AlertDialog(
             title: Text("Add note"),
             content: SingleChildScrollView(
@@ -59,14 +60,43 @@ class _HomeState extends State<Home> {
           );
         });
   }
-  _saveNote() async{
-      String title = _titleController.text;
-      String description = _descriptionController.text;
 
-      Annotation annotation = Annotation(title, description, DateTime.now().toString());
-      int result = await _db.saveNote(annotation);
+  _recoverAnnotation() async{
+    List annotationsRecovery = await _db.recoverAnnotation();
+
+    List<Annotation>? listTemp = <Annotation>[];
+    for (var item in annotationsRecovery){
+      Annotation annotation = Annotation.fromMap(item);
+      listTemp.add(annotation);
+    }
+    setState(() {
+      _annotations = listTemp!;
+    });
+    listTemp = null;
 
   }
+
+  _saveNote() async{
+    String title = _titleController.text;
+    String description = _descriptionController.text;
+
+    Annotation annotation = Annotation(title, description, DateTime.now().toString());
+    int result = await _db.saveNote(annotation);
+    print("salvar anotação: "+ result.toString());
+
+    _titleController.clear();
+    _descriptionController.clear();
+
+    _recoverAnnotation();
+
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _recoverAnnotation();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -74,7 +104,24 @@ class _HomeState extends State<Home> {
         title: Text("My notes"),
         backgroundColor: Colors.lightGreen,
       ),
-      body: Container(),
+      body: Column(
+        children: [
+          Expanded(
+              child: ListView.builder(
+                  itemCount: _annotations.length,
+                  itemBuilder: (context, index){
+                    final annotation = _annotations[index];
+                    return Card(
+                      child: ListTile(
+                        title: Text(annotation.title!),
+                        subtitle: Text("${annotation.date} - ${annotation.description}"),
+                      ),
+                    );
+                  }
+              )
+          )
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,

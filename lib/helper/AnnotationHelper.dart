@@ -6,7 +6,7 @@ class AnnotationHelper {
 
   static final String nameTable = "annotation";
   static final AnnotationHelper _annotationHelper = AnnotationHelper._internal();
-  late Database _db;
+  Database? _db;
 
   factory AnnotationHelper(){
     return _annotationHelper;
@@ -23,9 +23,13 @@ class AnnotationHelper {
       return _db;
     }
   }
-  
+
   _onCreate(Database db, int version) async {
-    String sql = "CREATE TABLE $nameTable (id INTEGER PRIMARY KEY AUTOINCREMENT, title VARCHAR, description TEXT, date DATETIME)";
+    String sql = "CREATE TABLE $nameTable ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+        "title VARCHAR, "
+        "description TEXT, "
+        "date DATETIME)";
     await db.execute(sql);
   }
 
@@ -37,7 +41,7 @@ class AnnotationHelper {
     return db;
   }
 
-  Future saveNote(Annotation annotation) async{
+  Future<int> saveNote(Annotation annotation) async{
 
     var dataBase = await db;
     int result = await dataBase.insert(nameTable, annotation.toMap());
@@ -45,4 +49,10 @@ class AnnotationHelper {
 
   }
 
+  recoverAnnotation() async{
+    var dataBase = await db;
+    String sql = "SELECT * FROM $nameTable ORDER BY date DESC ";
+    List annotations = await dataBase.rawQuery( sql );
+    return annotations;
+  }
 }
