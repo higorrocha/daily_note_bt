@@ -18,12 +18,24 @@ class _HomeState extends State<Home> {
   var _db = AnnotationHelper();
   List<Annotation> _annotations = <Annotation>[];
 
-  _showScreenAdd(){
+  _showScreenAdd( { Annotation? annotation} ){
+
+    String textSaveUpdate = "";
+    if ( annotation == null ){
+      _titleController.text = "";
+      _descriptionController.text = "";
+      textSaveUpdate = "Save";
+    }else{
+      _titleController.text = annotation.title!;
+      _titleController.text = annotation.description!;
+      textSaveUpdate = "Update";
+    }
+
     showDialog(
         context: context,
         builder: (context){
           return AlertDialog(
-            title: Text("Add note"),
+            title: Text("$textSaveUpdate note"),
             content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -53,10 +65,10 @@ class _HomeState extends State<Home> {
               ),
               TextButton(
                   onPressed: () {
-                    _saveNote();
+                    _saveUpdateNote(annotationSelected: annotation);
                     Navigator.pop(context);
                   },
-                  child: Text("Save")
+                  child: Text(textSaveUpdate)
               )
             ],
           );
@@ -78,13 +90,19 @@ class _HomeState extends State<Home> {
 
   }
 
-  _saveNote() async{
+  _saveUpdateNote({Annotation? annotationSelected}) async{
     String title = _titleController.text;
     String description = _descriptionController.text;
 
-    Annotation annotation = Annotation(title, description, DateTime.now().toString());
-    int result = await _db.saveNote(annotation);
-    print("salvar anotação: "+ result.toString());
+    if(annotationSelected == null){
+      Annotation annotation = Annotation(title, description, DateTime.now().toString());
+      int result = await _db.saveNote(annotation);
+    }else{
+      annotationSelected.title = title;
+      annotationSelected.description = description;
+      annotationSelected.date = DateTime.now().toString();
+      int result = await _db.updateNote(annotationSelected);
+    }
 
     _titleController.clear();
     _descriptionController.clear();
@@ -130,6 +148,35 @@ class _HomeState extends State<Home> {
                       child: ListTile(
                         title: Text(annotation.title!),
                         subtitle: Text("${_formatDate(annotation.date!)} - ${annotation.description}"),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                _showScreenAdd(annotation: annotation);
+                              },
+                              child: Padding(
+                                padding: EdgeInsets.only(right: 16),
+                                child: Icon(
+                                  Icons.edit,
+                                  color: Colors.green,
+                                ),
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+
+                              },
+                              child: Padding(
+                                padding: EdgeInsets.only(right: 0),
+                                child: Icon(
+                                  Icons.remove_circle,
+                                  color: Colors.red,
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
                       ),
                     );
                   }
