@@ -1,3 +1,5 @@
+import 'package:daily_note_bt/helper/AnnotationHelper.dart';
+import 'package:daily_note_bt/model/Annotation.dart';
 import 'package:flutter/material.dart';
 
 class Home extends StatefulWidget {
@@ -11,6 +13,7 @@ class _HomeState extends State<Home> {
 
   TextEditingController _titleController = TextEditingController();
   TextEditingController _descriptionController = TextEditingController();
+  var _db = AnnotationHelper();
 
   _showScreenAdd(){
     showDialog(
@@ -47,7 +50,7 @@ class _HomeState extends State<Home> {
               ),
               TextButton(
                   onPressed: () {
-
+                    _saveNote();
                     Navigator.pop(context);
                   },
                   child: Text("Save")
@@ -56,7 +59,14 @@ class _HomeState extends State<Home> {
           );
         });
   }
+  _saveNote() async{
+      String title = _titleController.text;
+      String description = _descriptionController.text;
 
+      Annotation annotation = Annotation(title, description, DateTime.now().toString());
+      int result = await _db.saveNote(annotation);
+
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
