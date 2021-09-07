@@ -66,4 +66,13 @@ class AnnotationHelper {
       whereArgs: [annotation.id]
     );
   }
+
+  Future<int> removeNote(int id) async {
+    var dataBase = await db;
+    return await dataBase.delete(
+        nameTable,
+        where: "id = ?",
+        whereArgs: [id]
+    );
+  }
 }

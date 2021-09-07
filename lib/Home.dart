@@ -124,6 +124,12 @@ class _HomeState extends State<Home> {
 
   }
 
+  _removeNote(int id) async{
+    await _db.removeNote(id);
+
+    _recoverAnnotation();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -165,6 +171,7 @@ class _HomeState extends State<Home> {
                             ),
                             GestureDetector(
                               onTap: () {
+                                _removeNote(annotation.id!);
 
                               },
                               child: Padding(
